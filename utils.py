@@ -19,6 +19,42 @@ def generate_primes(f, max_time):
         t += end - start
     return (l[-1], len(l))
 
+def generate_probable_primes(f, k, max_time):
+    """
+    runs miller-rabin with max k passes for max_time seconds of cpu time.
+    returns tuple with (largest prime generated, number of primes generated).
+    """
+    t = 0
+    i = 2
+    l = []
+    while t < max_time * 1e9:
+        start = time.process_time_ns()
+        if (f(i, k)):
+            end = time.process_time_ns()
+            l.append(i)
+        else:
+            end = time.process_time_ns()
+        i += 1
+        t += end - start
+    return (l[-1], len(l))
+
+def generate_miller_verfied(miller, verify, k, max_time):
+    t = 0
+    i = 2
+    l = []
+    while t < max_time * 1e9:
+        start = time.process_time_ns()
+        if (miller(i, k) and verify(i, [])):
+            end = time.process_time_ns()
+            l.append(i)
+        else:
+            end = time.process_time_ns()
+        i += 1
+        t += end - start
+    return (l[-1], len(l))
+
+
+
 def find_power_of_2_divisor(n):
     k = 0
     while n % 2 == 0:
