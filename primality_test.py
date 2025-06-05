@@ -1,15 +1,10 @@
-import math, time
+import math, time, random
+
+from utils import *
 
 MAX_PRIME = 876417533
 
 TARGET_MAX = 2 ** 30
-
-def read_primes() -> tuple[set, list]:
-    s = set()
-    with open("primes.txt", "r") as new_p:
-        for line in new_p:
-            s |= {int(line.strip())}
-    return s
 
 def get_prime_list() -> list:
     l = []
@@ -41,22 +36,57 @@ def sqrt_n_list(n, list_so_far):
             return False
     return True
 
-def generate_primes(f, max_time):
-    """
-    runs prime algorithms for max_time seconds of cpu time.
-    returns tuple with (largest prime generated, number of primes generated).
-    """
-    t = 0
-    i = 2
-    l = []
-    while t < max_time * 1e9:
-        start = time.process_time_ns()
-        if (f(i, l)):
-            end = time.process_time_ns()
-            l.append(i)
-        else:
-            end = time.process_time_ns()
-        i += 1
-        t += end - start
-    return (l[-1], len(l))
+# true if likely prime
+def mr_loop(n, b, k):
+    temp = b
+    for i in range(0, k):
+        if pow(b, 2 ** i, n) == -1 % n:
+            return True
+        temp = pow(temp, 2, n)
+    return False
 
+# true if likely prime
+def miller_rabin(n, a):
+    """
+    n is the number we test primality for, a is the intended witness
+    """
+    # n - 1 = (2 ** k) * q
+    # b = a ** q (mod n)
+    k = find_power_of_2_divisor(n - 1)
+    q = int((n - 1) // (2 ** k))
+    b = pow(a, q, n)
+    return b == 1 or mr_loop(n, b, k)
+
+def miller_randoms(n, k):
+    for r in random.sample(range(2, n), k):
+        if not miller_rabin(n, r):
+            return False
+    return True
+
+def miller_random_plus_k_range(n, k):
+    r = random.randint(2, n - k)
+    for i in range(k):
+        if not miller_rabin(n, r + i):
+            return False
+    return True
+
+def miller_first_k(n, k):
+    for i in range(2, k + 2):
+        if not miller_rabin(n, i):
+            return False
+    return True
+
+
+
+def test_miller_rabin():
+    s = read_primes()
+    for i in range(20, 2000000):
+        if (miller_randoms(i, 3) != (i in s)):
+            print("\t\tmr fail at", i, "randoms")
+        if (miller_random_plus_k_range(i, 3) != (i in s)):
+            print("\t\tmr fail at", i, "miller_random_plus_k_range")
+        if (miller_first_k(i, 3) != (i in s)):
+            print("\t\tmr fail at", i, "first_k")
+
+if __name__ == "__main__":
+    test_miller_rabin()
