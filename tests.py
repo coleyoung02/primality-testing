@@ -83,22 +83,22 @@ def large_primes_speed_test():
                 miller_clock = 0
                 sqrt_clock = 0
             
-def rabin_speed_test(miller_test_type: str, k):
+def rabin_speed_test(miller_test_type: str, passes):
     miller_clock = 0.0
-    interval_size = 50000
-    powers_of_10 = [5, 6, 7, 8, 9, 10]
-    with open(f"{output_directory}/rabin_speed_{miller_test_type}_k{k}.csv", "+w") as outfile:
+    interval_size = 100000
+    powers_of_10 = list(range(5, 18))
+    with open(f"{output_directory}/rabin_speed_{miller_test_type}_k{passes}.csv", "+w") as outfile:
         outfile.write(f"range,mr time\n")
         for j in powers_of_10:
             for k in [1, 2, 5]:
                 for i in range(10 ** j * k, 10 ** j  * k + interval_size):
                     m_start = time.process_time_ns()
-                    str_to_func[miller_test_type](i, k)
+                    str_to_func[miller_test_type](i, passes)
                     miller_clock += time.process_time_ns() - m_start
-                print("done with", i, j, k)
                 outfile.write(f"{10 ** j * k},{miller_clock / 1e9}\n")
                 outfile.flush()
                 miller_clock = 0
+    print("done with", miller_test_type, passes)
     
 
 def miller_verified_speed(miller_test_type: str):
@@ -135,5 +135,5 @@ if __name__ == "__main__":
         large_primes_speed_test()
     elif sys.argv[1] == "rabin_speed":
         for func in ["random", "random_k_range", "first_k"]:
-            for k in [1, 2, 3, 4, 5]:
+            for k in [1, 2, 3, 4]:
                 rabin_speed_test(func, k)
